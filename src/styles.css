@@ -1,0 +1,250 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  background: #ffffff;
+  color: #333;
+  line-height: 1.5;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.app-header {
+  background: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.app-header h1 {
+  font-size: 1.8rem;
+  color: #333;
+}
+
+.app-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.controls-panel {
+  flex: 0 0 280px;
+  background: #f5f5f5;
+  border-right: 1px solid #e0e0e0;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.controls-panel h2 {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.controls-panel h3 {
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  color: #666;
+}
+
+.control-group {
+  margin-bottom: 1rem;
+}
+
+.control-group label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #666;
+}
+
+.control-group input[type='number'],
+.control-group input[type='range'],
+.control-group input[type='color'] {
+  width: 100%;
+  padding: 0.4rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.control-group input[type='range'] {
+  padding: 0;
+}
+
+.control-group input[type='number']:disabled,
+.control-group input[type='range']:disabled {
+  background: #e8e8e8;
+  cursor: not-allowed;
+}
+
+.control-group span {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+.preset-btn {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #ddd;
+  background: #ffffff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.preset-btn:hover {
+  background: #f0f0f0;
+  border-color: #ccc;
+}
+
+.preset-btn:active {
+  background: #e5e5e5;
+}
+
+.control-group.buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+button {
+  padding: 0.6rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: #D21313;
+  color: white;
+  grid-column: 1 / -1;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #b81010;
+}
+
+.btn-primary:active:not(:disabled) {
+  background: #a00d0d;
+}
+
+.btn-primary:disabled {
+  background: #e0a0a0;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  color: #333;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #f5f5f5;
+  border-color: #ccc;
+}
+
+.btn-secondary:active:not(:disabled) {
+  background: #eeeeee;
+}
+
+.btn-secondary:disabled {
+  background: #f8f8f8;
+  color: #999;
+  border-color: #e5e5e5;
+  cursor: not-allowed;
+}
+
+.grid-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  padding: 2rem;
+}
+
+.grid-canvas {
+  border: 2px solid #ddd;
+  cursor: default;
+  image-rendering: pixelated;
+}
+
+.grid-canvas.editable {
+  cursor: crosshair;
+}
+
+.grid-canvas.editable:hover {
+  border-color: #D21313;
+}
+
+.timeline-panel {
+  flex: 0 0 280px;
+  background: #f5f5f5;
+  border-left: 1px solid #e0e0e0;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.timeline-panel h2 {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.generation-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #D21313;
+  margin: 0;
+}
+
+.no-frames-text {
+  font-size: 0.9rem;
+  color: #999;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .app-content {
+    flex-direction: column;
+  }
+
+  .controls-panel,
+  .timeline-panel {
+    flex: 0 0 auto;
+    max-height: 200px;
+    overflow-x: auto;
+  }
+
+  .grid-section {
+    flex: 1;
+  }
+
+  .control-group.buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-primary {
+    grid-column: 1;
+  }
+}
