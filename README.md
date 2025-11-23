@@ -1,7 +1,22 @@
-# Conway Generator
+# Conway Asset Generator
 
-A Conway's Game of Life implementation ready for Vercel deployment.
+A small React + TypeScript tool for Conway (conway.ai) to generate **Conway's Game of Life** grid animations and frames as **transparent GIFs** and **SVGs**.
+
+Designed for branding / web assets, not generic tinkering.
+
+---
+
+## Tech Stack
+
+- React + TypeScript + Vite
+- Browser GIF encoder (JS)
+- JSZip (for SVG ZIP export)
+
+---
 
 ## Getting Started
 
-More details coming soon...
+```bash
+npm install
+npm run dev
+```
