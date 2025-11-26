@@ -98,6 +98,7 @@ export const TimelinePanel: React.FC<TimelinePanelProps> = ({
               onClick={onExportGif}
               disabled={isExporting || startFrame > endFrame}
               className="btn-primary"
+              title="Exports frames as an animated GIF"
             >
               {isExporting ? 'Exporting...' : 'Export GIF'}
             </button>

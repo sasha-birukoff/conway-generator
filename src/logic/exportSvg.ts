@@ -5,21 +5,20 @@ export interface ExportOptions {
   height: number;
   aliveColor: string;
   deadColor: string;
-  gapFactor: number;
+  cellGap: number;
 }
 
 export function frameToSvg(frame: Grid, options: ExportOptions): string {
-  const { width, height, aliveColor, gapFactor } = options;
+  const { width, height, aliveColor, cellGap } = options;
   const rows = frame.length;
   const cols = frame[0].length;
 
   const cellWidth = width / cols;
   const cellHeight = height / rows;
-  const gap = Math.min(cellWidth, cellHeight) * gapFactor;
-  const rectWidth = cellWidth - gap;
-  const rectHeight = cellHeight - gap;
-  const offsetX = gap / 2;
-  const offsetY = gap / 2;
+  const rectWidth = Math.max(0, cellWidth - cellGap);
+  const rectHeight = Math.max(0, cellHeight - cellGap);
+  const offsetX = cellGap / 2;
+  const offsetY = cellGap / 2;
 
   let svgContent = '';
 

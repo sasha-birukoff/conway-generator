@@ -7,10 +7,9 @@ interface GridCanvasProps {
   aliveColor: string;
   deadColor: string;
   backgroundColor: string;
-  gapFactor: number;
+  cellGap: number;
   editable: boolean;
-  width?: number;
-  height?: number;
+  cellSize: number;
 }
 
 export const GridCanvas: React.FC<GridCanvasProps> = ({
@@ -19,12 +18,16 @@ export const GridCanvas: React.FC<GridCanvasProps> = ({
   aliveColor,
   deadColor,
   backgroundColor,
-  gapFactor,
+  cellGap,
   editable,
-  width = 400,
-  height = 400,
+  cellSize,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const rows = grid.length;
+  const cols = grid[0].length;
+  const width = cols * cellSize;
+  const height = rows * cellSize;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -33,29 +36,24 @@ export const GridCanvas: React.FC<GridCanvasProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const rows = grid.length;
-    const cols = grid[0].length;
-    const cellWidth = width / cols;
-    const cellHeight = height / rows;
-    const gap = Math.min(cellWidth, cellHeight) * gapFactor;
-    const rectWidth = cellWidth - gap;
-    const rectHeight = cellHeight - gap;
-    const offsetX = gap / 2;
-    const offsetY = gap / 2;
+    const rectWidth = Math.max(0, cellSize - cellGap);
+    const rectHeight = Math.max(0, cellSize - cellGap);
+    const offsetX = cellGap / 2;
+    const offsetY = cellGap / 2;
 
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, width, height);
 
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
-        const x = c * cellWidth + offsetX;
-        const y = r * cellHeight + offsetY;
+        const x = c * cellSize + offsetX;
+        const y = r * cellSize + offsetY;
 
         ctx.fillStyle = grid[r][c] ? aliveColor : deadColor;
         ctx.fillRect(x, y, rectWidth, rectHeight);
       }
     }
-  }, [grid, aliveColor, deadColor, backgroundColor, gapFactor, width, height]);
+  }, [grid, aliveColor, deadColor, backgroundColor, cellGap, cellSize, rows, cols]);
 
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!editable) return;
@@ -67,13 +65,8 @@ export const GridCanvas: React.FC<GridCanvasProps> = ({
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    const rows = grid.length;
-    const cols = grid[0].length;
-    const cellWidth = width / cols;
-    const cellHeight = height / rows;
-
-    const col = Math.floor(x / cellWidth);
-    const row = Math.floor(y / cellHeight);
+    const col = Math.floor(x / cellSize);
+    const row = Math.floor(y / cellSize);
 
     if (row >= 0 && row < rows && col >= 0 && col < cols) {
       const newGrid = toggleCell(grid, row, col);

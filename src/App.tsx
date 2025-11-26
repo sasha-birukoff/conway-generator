@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GridCanvas } from './components/GridCanvas';
 import { ControlsPanel } from './components/ControlsPanel';
+import { SettingsPanel } from './components/SettingsPanel';
 import { TimelinePanel } from './components/TimelinePanel';
 import {
   Grid,
@@ -28,38 +29,97 @@ export default function App() {
   const [currentFrameIndex, setCurrentFrameIndex] = useState(0);
   const [startFrame, setStartFrame] = useState(0);
   const [endFrame, setEndFrame] = useState(0);
-  const [gapFactor, setGapFactor] = useState(0.5);
+  const [cellGap, setCellGap] = useState(16);
   const [aliveColor, setAliveColor] = useState('#D21313');
   const [deadColor, setDeadColor] = useState('#FFFFFF');
   const [backgroundColor, setBackgroundColor] = useState('#FFFFFF');
   const [randomDensity, setRandomDensity] = useState(30);
-  const [longSidePx, setLongSidePx] = useState(1000);
+  const [longSidePx, setLongSidePx] = useState(400);
   const [isExporting, setIsExporting] = useState(false);
+  const [infiniteCanvasMode, setInfiniteCanvasMode] = useState(false);
+  const [infiniteGrid, setInfiniteGrid] = useState<Grid>(createEmptyGrid(30, 30));
 
   const TICK_INTERVAL = 200;
   const MAX_FRAMES = 20;
+  const BACKGROUND_SIZE = 30;
+
+  // Calculate viewport offset (center the display grid in the background)
+  const viewportOffsetRow = Math.floor((BACKGROUND_SIZE - rows) / 2);
+  const viewportOffsetCol = Math.floor((BACKGROUND_SIZE - cols) / 2);
 
   useEffect(() => {
     if (!isPlaying || mode !== 'sim') return;
 
     const interval = setInterval(() => {
-      setGrid((prevGrid) => {
-        const nextGrid = stepConway(prevGrid);
+      if (infiniteCanvasMode) {
+        // Infinite canvas mode: simulate on 30x30 background, display viewport
+        setInfiniteGrid((prevInfiniteGrid) => {
+          const nextInfiniteGrid = stepConway(prevInfiniteGrid);
 
-        setFrames((prevFrames) => {
-          if (prevFrames.length < MAX_FRAMES) {
-            return [...prevFrames, copyGrid(nextGrid)];
+          // Extract viewport portion for display and recording
+          const viewportGrid: Grid = [];
+          for (let r = 0; r < rows; r++) {
+            const row: boolean[] = [];
+            for (let c = 0; c < cols; c++) {
+              row.push(nextInfiniteGrid[viewportOffsetRow + r][viewportOffsetCol + c]);
+            }
+            viewportGrid.push(row);
           }
-          return prevFrames;
-        });
 
-        setGeneration((prev) => prev + 1);
-        return nextGrid;
-      });
+          // Record frame
+          setFrames((prevFrames) => {
+            if (prevFrames.length < MAX_FRAMES) {
+              const copiedGrid = copyGrid(viewportGrid);
+              const newFrames = [...prevFrames, copiedGrid];
+
+              // Enhanced logging
+              const gridStr = copiedGrid.map(row => row.map(c => c ? '█' : '·').join('')).join('\n');
+              const aliveCount = copiedGrid.flat().filter(c => c).length;
+              console.log(`Frame ${newFrames.length - 1}: ${rows}x${cols} grid (${aliveCount} alive)\n${gridStr}`);
+
+              setCurrentFrameIndex(newFrames.length - 1);
+              setEndFrame(newFrames.length - 1);
+              return newFrames;
+            }
+            return prevFrames;
+          });
+
+          // Update display grid with viewport
+          setGrid(viewportGrid);
+          setGeneration((prev) => prev + 1);
+          return nextInfiniteGrid;
+        });
+      } else {
+        // Local mode: simulate on user's grid
+        setGrid((prevGrid) => {
+          const nextGrid = stepConway(prevGrid);
+
+          // Record frame
+          setFrames((prevFrames) => {
+            if (prevFrames.length < MAX_FRAMES) {
+              const copiedGrid = copyGrid(nextGrid);
+              const newFrames = [...prevFrames, copiedGrid];
+
+              // Enhanced logging
+              const gridStr = copiedGrid.map(row => row.map(c => c ? '█' : '·').join('')).join('\n');
+              const aliveCount = copiedGrid.flat().filter(c => c).length;
+              console.log(`Frame ${newFrames.length - 1}: ${nextGrid.length}x${nextGrid[0].length} grid (${aliveCount} alive)\n${gridStr}`);
+
+              setCurrentFrameIndex(newFrames.length - 1);
+              setEndFrame(newFrames.length - 1);
+              return newFrames;
+            }
+            return prevFrames;
+          });
+
+          setGeneration((prev) => prev + 1);
+          return nextGrid;
+        });
+      }
     }, TICK_INTERVAL);
 
     return () => clearInterval(interval);
-  }, [isPlaying, mode]);
+  }, [isPlaying, mode, infiniteCanvasMode, rows, cols, viewportOffsetRow, viewportOffsetCol]);
 
   const handleRowsChange = (newRows: number) => {
     setRows(newRows);
@@ -86,10 +146,24 @@ export default function App() {
   const handlePlayPause = () => {
     if (mode === 'edit') {
       setMode('sim');
+      // Frame 0 = initial grid state
       setFrames([copyGrid(grid)]);
       setCurrentFrameIndex(0);
       setStartFrame(0);
       setEndFrame(0);
+
+      // Initialize infinite grid if in infinite canvas mode
+      if (infiniteCanvasMode) {
+        const newInfiniteGrid = createEmptyGrid(BACKGROUND_SIZE, BACKGROUND_SIZE);
+        // Copy current grid into center of infinite grid
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            newInfiniteGrid[viewportOffsetRow + r][viewportOffsetCol + c] = grid[r][c];
+          }
+        }
+        setInfiniteGrid(newInfiniteGrid);
+      }
+
       setIsPlaying(true);
     } else {
       setIsPlaying(!isPlaying);
@@ -98,18 +172,48 @@ export default function App() {
 
   const handleStep = () => {
     if (mode === 'sim' && !isPlaying) {
-      const nextGrid = stepConway(grid);
-      setGrid(nextGrid);
-      setGeneration((prev) => prev + 1);
+      if (infiniteCanvasMode) {
+        setInfiniteGrid((prevInfiniteGrid) => {
+          const nextInfiniteGrid = stepConway(prevInfiniteGrid);
 
-      setFrames((prevFrames) => {
-        if (prevFrames.length < MAX_FRAMES) {
-          const newFrames = [...prevFrames, copyGrid(nextGrid)];
-          setEndFrame(newFrames.length - 1);
-          return newFrames;
-        }
-        return prevFrames;
-      });
+          // Extract viewport portion
+          const viewportGrid: Grid = [];
+          for (let r = 0; r < rows; r++) {
+            const row: boolean[] = [];
+            for (let c = 0; c < cols; c++) {
+              row.push(nextInfiniteGrid[viewportOffsetRow + r][viewportOffsetCol + c]);
+            }
+            viewportGrid.push(row);
+          }
+
+          setGrid(viewportGrid);
+          setGeneration((prev) => prev + 1);
+
+          setFrames((prevFrames) => {
+            if (prevFrames.length < MAX_FRAMES) {
+              const newFrames = [...prevFrames, copyGrid(viewportGrid)];
+              setEndFrame(newFrames.length - 1);
+              return newFrames;
+            }
+            return prevFrames;
+          });
+
+          return nextInfiniteGrid;
+        });
+      } else {
+        const nextGrid = stepConway(grid);
+        setGrid(nextGrid);
+        setGeneration((prev) => prev + 1);
+
+        setFrames((prevFrames) => {
+          if (prevFrames.length < MAX_FRAMES) {
+            const newFrames = [...prevFrames, copyGrid(nextGrid)];
+            setEndFrame(newFrames.length - 1);
+            return newFrames;
+          }
+          return prevFrames;
+        });
+      }
     }
   };
 
@@ -181,7 +285,7 @@ export default function App() {
           height,
           aliveColor,
           deadColor,
-          gapFactor,
+          cellGap,
         });
 
         const filename = `frame_${String(i).padStart(3, '0')}.svg`;
@@ -210,28 +314,35 @@ export default function App() {
       const { width, height } = calculateExportDimensions();
       const framesToExport = frames.slice(startFrame, endFrame + 1);
 
-      const blob = await framesToGif(framesToExport, {
+      console.log(`Starting GIF export: ${width}x${height}, ${framesToExport.length} frames`);
+
+      const gifBlob = await framesToGif(framesToExport, {
         width,
         height,
         aliveColor,
-        gapFactor,
-        frameDelay: 200,
+        deadColor,
+        cellGap,
+        frameDelay: TICK_INTERVAL,
       });
 
-      const url = URL.createObjectURL(blob);
+      const url = URL.createObjectURL(gifBlob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `conway_frames_${startFrame}-${endFrame}.gif`;
+      a.download = `conway_${startFrame}-${endFrame}.gif`;
       a.click();
       URL.revokeObjectURL(url);
+
+      console.log('GIF export complete');
     } catch (err) {
       console.error('GIF export failed:', err);
+      alert(`GIF export failed: ${err}`);
     } finally {
       setIsExporting(false);
     }
   };
 
-  const displayGrid = mode === 'sim' && frames.length > 0 ? frames[currentFrameIndex] : grid;
+  // Show live grid during sim (unless scrubbing), otherwise show scrubbed frame
+  const displayGrid = mode === 'sim' && isPlaying ? grid : (mode === 'sim' && frames.length > 0 ? frames[currentFrameIndex] : grid);
 
   return (
     <div className="app">
@@ -240,13 +351,9 @@ export default function App() {
       </header>
 
       <div className="app-content">
-        <ControlsPanel
-          rows={rows}
-          onRowsChange={handleRowsChange}
-          cols={cols}
-          onColsChange={handleColsChange}
-          gapFactor={gapFactor}
-          onGapFactorChange={setGapFactor}
+        <SettingsPanel
+          cellGap={cellGap}
+          onCellGapChange={setCellGap}
           aliveColor={aliveColor}
           onAliveColorChange={setAliveColor}
           deadColor={deadColor}
@@ -257,9 +364,18 @@ export default function App() {
           onRandomDensityChange={setRandomDensity}
           longSidePx={longSidePx}
           onLongSidePxChange={setLongSidePx}
+          infiniteCanvasMode={infiniteCanvasMode}
+          onInfiniteCanvasModeChange={setInfiniteCanvasMode}
+          mode={mode}
+        />
+
+        <ControlsPanel
+          rows={rows}
+          onRowsChange={handleRowsChange}
+          cols={cols}
+          onColsChange={handleColsChange}
           isPlaying={isPlaying}
           onPlayPause={handlePlayPause}
-          onStep={handleStep}
           onReset={handleReset}
           onClear={handleClear}
           onPresetSelect={handlePresetSelect}
@@ -273,10 +389,9 @@ export default function App() {
             aliveColor={aliveColor}
             deadColor={deadColor}
             backgroundColor={backgroundColor}
-            gapFactor={gapFactor}
+            cellGap={cellGap}
             editable={mode === 'edit'}
-            width={400}
-            height={400}
+            cellSize={40}
           />
         </div>
 

@@ -27,9 +27,12 @@ function countNeighbors(grid: Grid, row: number, col: number): number {
   for (let dr = -1; dr <= 1; dr++) {
     for (let dc = -1; dc <= 1; dc++) {
       if (dr === 0 && dc === 0) continue;
+      // Toroidal wrapping - edges wrap around
       const r = (row + dr + rows) % rows;
       const c = (col + dc + cols) % cols;
-      if (grid[r][c]) count++;
+      if (grid[r][c]) {
+        count++;
+      }
     }
   }
 
