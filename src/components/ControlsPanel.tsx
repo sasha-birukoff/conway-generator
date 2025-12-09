@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { PRESETS } from '../logic/presets';
 
 interface ControlsPanelProps {
@@ -14,6 +14,42 @@ interface ControlsPanelProps {
   mode: 'edit' | 'sim';
 }
 
+// Custom hook for number input with delayed validation
+function useNumberInput(value: number, onChange: (val: number) => void, min: number, max: number) {
+  const [inputValue, setInputValue] = useState(String(value));
+
+  // Sync with external value changes (e.g., presets)
+  useEffect(() => {
+    setInputValue(String(value));
+  }, [value]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setInputValue(newValue);
+
+    const parsed = parseInt(newValue);
+    if (!isNaN(parsed) && parsed >= min && parsed <= max) {
+      onChange(parsed);
+    }
+  };
+
+  const handleBlur = () => {
+    const parsed = parseInt(inputValue);
+    if (isNaN(parsed) || parsed < min) {
+      setInputValue(String(min));
+      onChange(min);
+    } else if (parsed > max) {
+      setInputValue(String(max));
+      onChange(max);
+    } else {
+      setInputValue(String(parsed));
+      onChange(parsed);
+    }
+  };
+
+  return { inputValue, handleChange, handleBlur };
+}
+
 export const ControlsPanel: React.FC<ControlsPanelProps> = ({
   rows,
   onRowsChange,
@@ -26,6 +62,9 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
   onPresetSelect,
   mode,
 }) => {
+  const colsInput = useNumberInput(cols, onColsChange, 1, 30);
+  const rowsInput = useNumberInput(rows, onRowsChange, 1, 30);
+
   return (
     <div className="controls-panel">
       <h2>Controls</h2>
@@ -37,8 +76,9 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
             type="number"
             min="1"
             max="30"
-            value={cols}
-            onChange={(e) => onColsChange(Math.max(1, Math.min(30, parseInt(e.target.value) || 1)))}
+            value={colsInput.inputValue}
+            onChange={colsInput.handleChange}
+            onBlur={colsInput.handleBlur}
             disabled={mode === 'sim'}
           />
         </label>
@@ -48,8 +88,9 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
             type="number"
             min="1"
             max="30"
-            value={rows}
-            onChange={(e) => onRowsChange(Math.max(1, Math.min(30, parseInt(e.target.value) || 1)))}
+            value={rowsInput.inputValue}
+            onChange={rowsInput.handleChange}
+            onBlur={rowsInput.handleBlur}
             disabled={mode === 'sim'}
           />
         </label>
