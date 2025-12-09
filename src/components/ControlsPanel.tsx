@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PRESETS } from '../logic/presets';
+import { SymmetryType } from '../logic/life';
 
 interface ControlsPanelProps {
   rows: number;
@@ -9,6 +10,7 @@ interface ControlsPanelProps {
   isPlaying: boolean;
   onPlayPause: () => void;
   onReset: () => void;
+  onSymmetricReset: (symmetry: SymmetryType) => void;
   onClear: () => void;
   onPresetSelect: (presetIndex: number) => void;
   mode: 'edit' | 'sim';
@@ -50,6 +52,13 @@ function useNumberInput(value: number, onChange: (val: number) => void, min: num
   return { inputValue, handleChange, handleBlur };
 }
 
+const SYMMETRY_OPTIONS: { value: SymmetryType; label: string }[] = [
+  { value: 'quad', label: '4-Way' },
+  { value: 'horizontal', label: 'Horizontal' },
+  { value: 'vertical', label: 'Vertical' },
+  { value: 'diagonal', label: 'Diagonal' },
+];
+
 export const ControlsPanel: React.FC<ControlsPanelProps> = ({
   rows,
   onRowsChange,
@@ -58,12 +67,14 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
   isPlaying,
   onPlayPause,
   onReset,
+  onSymmetricReset,
   onClear,
   onPresetSelect,
   mode,
 }) => {
   const colsInput = useNumberInput(cols, onColsChange, 1, 30);
   const rowsInput = useNumberInput(rows, onRowsChange, 1, 30);
+  const [symmetryType, setSymmetryType] = useState<SymmetryType>('quad');
 
   return (
     <div className="controls-panel">
@@ -119,6 +130,29 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
         <button onClick={onClear} className="btn-primary">
           Clear
         </button>
+      </div>
+
+      <div className="control-group symmetric-group">
+        <h3>Symmetric Reset</h3>
+        <div className="symmetric-controls">
+          <select
+            value={symmetryType}
+            onChange={(e) => setSymmetryType(e.target.value as SymmetryType)}
+            className="symmetry-select"
+          >
+            {SYMMETRY_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={() => onSymmetricReset(symmetryType)}
+            className="btn-primary"
+          >
+            Generate
+          </button>
+        </div>
       </div>
     </div>
   );

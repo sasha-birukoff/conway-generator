@@ -7,8 +7,10 @@ import {
   Grid,
   createEmptyGrid,
   createRandomGrid,
+  createSymmetricGrid,
   copyGrid,
   stepConway,
+  SymmetryType,
 } from './logic/life';
 import { PRESETS } from './logic/presets';
 import { frameToSvg } from './logic/exportSvg';
@@ -236,6 +238,16 @@ export default function App() {
     setCurrentFrameIndex(0);
   };
 
+  const handleSymmetricReset = (symmetry: SymmetryType) => {
+    const newGrid = createSymmetricGrid(rows, cols, randomDensity, symmetry);
+    setGrid(newGrid);
+    setMode('edit');
+    setGeneration(0);
+    setFrames([]);
+    setIsPlaying(false);
+    setCurrentFrameIndex(0);
+  };
+
   const handlePresetSelect = (presetIndex: number) => {
     const preset = PRESETS[presetIndex];
     setRows(preset.rows);
@@ -377,6 +389,7 @@ export default function App() {
           isPlaying={isPlaying}
           onPlayPause={handlePlayPause}
           onReset={handleReset}
+          onSymmetricReset={handleSymmetricReset}
           onClear={handleClear}
           onPresetSelect={handlePresetSelect}
           mode={mode}

@@ -207,6 +207,36 @@ body {
   margin-top: 1rem;
 }
 
+.control-group.symmetric-group {
+  margin-top: 1rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.symmetric-controls {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.symmetry-select {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  background: #fff;
+  cursor: pointer;
+}
+
+.symmetry-select:hover {
+  border-color: #ccc;
+}
+
+.symmetric-controls .btn-primary {
+  flex-shrink: 0;
+}
+
 button {
   padding: 0.5rem;
   border: none;
