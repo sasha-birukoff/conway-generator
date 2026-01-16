@@ -359,6 +359,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
+        <img src="/logo.svg" alt="Conway" className="header-logo" />
         <h1>Conway Asset Generator</h1>
       </header>
 

@@ -16,13 +16,15 @@ interface ControlsPanelProps {
   mode: 'edit' | 'sim';
 }
 
-// Custom hook for number input with delayed validation
+// Custom hook for number input with Figma-like behavior
 function useNumberInput(value: number, onChange: (val: number) => void, min: number, max: number) {
   const [inputValue, setInputValue] = useState(String(value));
+  const lastValidValue = React.useRef(value);
 
   // Sync with external value changes (e.g., presets)
   useEffect(() => {
     setInputValue(String(value));
+    lastValidValue.current = value;
   }, [value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,24 +34,28 @@ function useNumberInput(value: number, onChange: (val: number) => void, min: num
     const parsed = parseInt(newValue);
     if (!isNaN(parsed) && parsed >= min && parsed <= max) {
       onChange(parsed);
+      lastValidValue.current = parsed;
     }
   };
 
   const handleBlur = () => {
     const parsed = parseInt(inputValue);
-    if (isNaN(parsed) || parsed < min) {
-      setInputValue(String(min));
-      onChange(min);
-    } else if (parsed > max) {
-      setInputValue(String(max));
-      onChange(max);
+    if (isNaN(parsed) || parsed < min || parsed > max) {
+      // Revert to last valid value
+      setInputValue(String(lastValidValue.current));
     } else {
       setInputValue(String(parsed));
       onChange(parsed);
+      lastValidValue.current = parsed;
     }
   };
 
-  return { inputValue, handleChange, handleBlur };
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Select all text on focus (Figma-like behavior)
+    e.target.select();
+  };
+
+  return { inputValue, handleChange, handleBlur, handleFocus };
 }
 
 const SYMMETRY_OPTIONS: { value: SymmetryType; label: string }[] = [
@@ -90,6 +96,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
             value={colsInput.inputValue}
             onChange={colsInput.handleChange}
             onBlur={colsInput.handleBlur}
+            onFocus={colsInput.handleFocus}
             disabled={mode === 'sim'}
           />
         </label>
@@ -102,6 +109,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
             value={rowsInput.inputValue}
             onChange={rowsInput.handleChange}
             onBlur={rowsInput.handleBlur}
+            onFocus={rowsInput.handleFocus}
             disabled={mode === 'sim'}
           />
         </label>

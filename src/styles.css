@@ -22,13 +22,21 @@ body {
 .app-header {
   background: #ffffff;
   border-bottom: 1px solid #e0e0e0;
-  padding: 1.5rem;
-  text-align: center;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-logo {
+  height: 18px;
+  width: auto;
 }
 
 .app-header h1 {
   font-size: 1.8rem;
   color: #333;
+  display: none;
 }
 
 .app-content {
