@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 interface TimelinePanelProps {
   generation: number;
@@ -32,31 +32,30 @@ export const TimelinePanel: React.FC<TimelinePanelProps> = ({
 
   return (
     <div className="timeline-panel">
-      <h2>Timeline</h2>
+      {/* Generation Counter */}
+      <p className="generation-text">Generation: {generation}</p>
 
-      <div className="control-group">
-        <p className="generation-text">Generation: {generation}</p>
-      </div>
-
-      {hasFrames && (
+      {hasFrames ? (
         <>
+          {/* Frame Slider */}
           <div className="control-group">
-            <label>
-              Frame:
-              <input
-                type="range"
-                min="0"
-                max={maxFrame}
-                value={currentFrameIndex}
-                onChange={(e) => onFrameIndexChange(parseInt(e.target.value))}
-              />
-              <span>{currentFrameIndex} / {maxFrame}</span>
-            </label>
+            <div className="slider-row">
+              <span className="slider-label">Frame</span>
+              <span className="value-display">{currentFrameIndex} / {maxFrame}</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max={maxFrame}
+              value={currentFrameIndex}
+              onChange={(e) => onFrameIndexChange(parseInt(e.target.value))}
+            />
           </div>
 
-          <div className="control-group">
+          {/* Start/End Frame */}
+          <div className="control-group row-cols-group">
             <label>
-              Start Frame:
+              Start Frame
               <input
                 type="number"
                 min="0"
@@ -68,11 +67,8 @@ export const TimelinePanel: React.FC<TimelinePanelProps> = ({
                 }}
               />
             </label>
-          </div>
-
-          <div className="control-group">
             <label>
-              End Frame:
+              End Frame
               <input
                 type="number"
                 min="0"
@@ -86,28 +82,32 @@ export const TimelinePanel: React.FC<TimelinePanelProps> = ({
             </label>
           </div>
 
+          {/* Export Buttons */}
           <div className="control-group buttons">
-            <button
-              onClick={onExportSvg}
-              disabled={isExporting || startFrame > endFrame}
-              className="btn-primary"
-            >
-              {isExporting ? 'Exporting...' : 'Export SVG ZIP'}
-            </button>
             <button
               onClick={onExportGif}
               disabled={isExporting || startFrame > endFrame}
-              className="btn-primary"
-              title="Exports frames as an animated GIF"
+              className="btn-export"
             >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 1v9M8 10L4.5 6.5M8 10l3.5-3.5M2 12v2h12v-2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
               {isExporting ? 'Exporting...' : 'Export GIF'}
+            </button>
+            <button
+              onClick={onExportSvg}
+              disabled={isExporting || startFrame > endFrame}
+              className="btn-export-secondary"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 1v9M8 10L4.5 6.5M8 10l3.5-3.5M2 12v2h12v-2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              {isExporting ? 'Exporting...' : 'Export SVG ZIP'}
             </button>
           </div>
         </>
-      )}
-
-      {!hasFrames && (
-        <p className="no-frames-text">No frames yet. Press Play to start simulation.</p>
+      ) : (
+        <p className="no-frames-text">Press Play to start simulation and record frames.</p>
       )}
     </div>
   );
